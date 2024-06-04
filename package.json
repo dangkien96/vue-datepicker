@@ -35,7 +35,7 @@
   "homepage": "https://vue-datepicker.netlify.com/",
   "scripts": {
     "commit": "git cz",
-    "dev": "npm run build:es -- --watch",
+    "dev": "npm run build:es -- --watch --port 3000",
     "build": "npm run build:browser && npm run build:es && npm run build:umd",
     "build:doc": "cd doc-src && npm install && npm run build",
     "build:browser": "rollup --config build/rollup.config.browser.js",

@@ -1,22 +1,22 @@
-import { clearAllBodyScrollLocks } from 'body-scroll-lock';
+import { clearAllBodyScrollLocks } from "body-scroll-lock";
 
 // Styles
-import './VDPicker.scss';
+import "./VDPicker.scss";
 
 // Mixins
-import Localable from '../../mixins/localable';
-import Mobile from '../../mixins/mobile';
+import Localable from "../../mixins/localable";
+import Mobile from "../../mixins/mobile";
 
 // Directives
-import ClickOutside from '../../directives/click-outside';
+import ClickOutside from "../../directives/click-outside";
 
 // Components
-import VDMenu from '../VDMenu';
-import VDPickerCustomInput from './VDPickerCustomInput/VDPickerCustomInput';
-import VDPickerAgenda from './VDPickerAgenda/VDPickerAgenda';
+import VDMenu from "../VDMenu";
+import VDPickerCustomInput from "./VDPickerCustomInput/VDPickerCustomInput";
+import VDPickerAgenda from "./VDPickerAgenda/VDPickerAgenda";
 
 // Constants
-import { Z_INDEX_LIST, KEYCODES } from '../../constants';
+import { Z_INDEX_LIST, KEYCODES } from "../../constants";
 
 // Date Helpers
 import {
@@ -25,34 +25,31 @@ import {
   getDefaultOutputFormat,
   initDate,
   genFormattedInputDate,
-  transformDateForModel,
-} from './utils/helpers';
+  transformDateForModel
+} from "./utils/helpers";
 
-import { generateRandomId, validateAttachTarget } from '../../utils/helpers';
-import { deprecate, removed } from '../../utils/console';
-import mixins from '../../utils/mixins';
+import { generateRandomId, validateAttachTarget } from "../../utils/helpers";
+import { deprecate, removed } from "../../utils/console";
+import mixins from "../../utils/mixins";
 
 export const defaultMenuProps = {
-  minWidth: '290px',
-  maxWidth: '315px',
+  minWidth: "290px",
+  maxWidth: "315px"
 };
 
-const baseMixins = mixins(
-  Localable,
-  Mobile,
-);
+const baseMixins = mixins(Localable, Mobile);
 
 export default baseMixins.extend({
-  name: 'VDPicker',
-  provide () {
+  name: "VDPicker",
+  provide() {
     return {
-      VDPicker: this,
+      VDPicker: this
     };
   },
   directives: { ClickOutside },
   props: {
     id: { type: String, default: undefined },
-    name: { type: String, default: 'datepicker' },
+    name: { type: String, default: "datepicker" },
     // Add input clear functionality
     clearable: { type: Boolean, default: false },
     // Validation Buttons
@@ -60,10 +57,10 @@ export default baseMixins.extend({
     buttonValidate: { type: String, default: undefined },
     buttonCancel: { type: String, default: undefined },
     // type (date, month, quarter, year picker)
-    type: { type: String, default: 'date' },
+    type: { type: String, default: "date" },
     // Range
     range: { type: Boolean, default: false },
-    rangeInputText: { type: String, default: '%d ~ %d' },
+    rangeInputText: { type: String, default: "%d ~ %d" },
     rangeHeaderText: { type: String, default: undefined },
     rangePresets: { type: Array, default: undefined },
     // Current Value from v-model
@@ -74,11 +71,11 @@ export default baseMixins.extend({
     // Show/hide datepicker
     visible: { type: Boolean, default: false },
     // Sets the locale.
-    placeholder: { type: String, default: 'YYYY-MM-DD' },
+    placeholder: { type: String, default: "YYYY-MM-DD" },
     // Applies specified color to the control
-    color: { type: String, default: '#4f88ff' },
+    color: { type: String, default: "#4f88ff" },
     // Applies custom class to datepicker content
-    contentClass: { type: String, default: '' },
+    contentClass: { type: String, default: "" },
     // Allowed dates
     allowedDates: { type: Function },
     minDate: { type: [String, Number, Date] },
@@ -96,7 +93,7 @@ export default baseMixins.extend({
     // Responsive bottom sheet
     fullscreenMobile: { type: Boolean, default: false },
     // tabindex
-    tabindex: { type: [String, Number], default: '0' },
+    tabindex: { type: [String, Number], default: "0" },
     // Right to Left
     rtl: { type: Boolean, default: false },
 
@@ -108,67 +105,74 @@ export default baseMixins.extend({
     // attach
     attach: { validator: validateAttachTarget, default: false },
     // Specificy a z-index for agenda & overlay
-    zIndex: { type: Number, default: Z_INDEX_LIST.datepicker },
+    zIndex: { type: Number, default: Z_INDEX_LIST.datepicker }
   },
   data: () => ({
     date: undefined,
     isMenuActive: false,
     isBooted: false,
-    activator: undefined,
+    activator: undefined
   }),
   computed: {
-    classes () {
+    classes() {
       return {
-        'vd-wrapper--inline': this.inline,
-        'vd-wrapper--disabled': this.disabled,
-        'vd-wrapper--rtl': this.rtl,
+        "vd-wrapper--inline": this.inline,
+        "vd-wrapper--disabled": this.disabled,
+        "vd-wrapper--rtl": this.rtl
       };
     },
     // use a computed to have a dynamicId for each instance
-    componentId () {
+    componentId() {
       return this.id || `datepicker_${generateRandomId()}`;
     },
     // If format isnt specificed, select default format from type
-    inputFormat () {
-      if (!this.format) return getDefaultInputFormat(this.range ? 'range' : this.type);
+    inputFormat() {
+      if (!this.format)
+        return getDefaultInputFormat(this.range ? "range" : this.type);
       return this.format;
     },
-    headerFormat () {
-      if (!this.formatHeader) return getDefaultHeaderFormat(this.range ? 'range' : this.type);
+    headerFormat() {
+      if (!this.formatHeader)
+        return getDefaultHeaderFormat(this.range ? "range" : this.type);
       return this.formatHeader;
     },
-    outputFormat () {
-      return getDefaultOutputFormat(this.range ? 'range' : this.type);
+    outputFormat() {
+      return getDefaultOutputFormat(this.range ? "range" : this.type);
     },
-    textsFormat () {
-      const { buttonValidate, buttonCancel, rangeHeaderText } = this.currentLocale.lang;
+    textsFormat() {
+      const {
+        buttonValidate,
+        buttonCancel,
+        rangeHeaderText
+      } = this.currentLocale.lang;
       return {
         buttonValidate: this.buttonValidate || buttonValidate,
         buttonCancel: this.buttonCancel || buttonCancel,
-        rangeHeaderText: this.rangeHeaderText || rangeHeaderText,
+        rangeHeaderText: this.rangeHeaderText || rangeHeaderText
       };
     },
     internalDate: {
-      get () {
+      get() {
         return initDate(this.value, {
           range: this.range,
           locale: this.currentLocale,
-          type: this.type,
+          type: this.type
         });
       },
-      set (date) {
+      set(date) {
         this.date = date;
-      },
+      }
     },
-    isDateDefined () {
+    isDateDefined() {
       const isDateDefined = !this.range && this.internalDate;
-      const isDateRangeDefined = this.range &&
+      const isDateRangeDefined =
+        this.range &&
         this.internalDate &&
         this.internalDate.start &&
         this.internalDate.end;
       return Boolean(isDateDefined) || Boolean(isDateRangeDefined);
     },
-    formattedInputDate () {
+    formattedInputDate() {
       return genFormattedInputDate({
         inputFormat: this.inputFormat,
         internalDate: this.internalDate,
@@ -176,130 +180,147 @@ export default baseMixins.extend({
         locale: this.currentLocale,
         range: this.range,
         rangeInputText: this.rangeInputText,
-        type: this.type,
+        type: this.type
       });
     },
-    isFullScreenMode () {
+    isFullScreenMode() {
       return this.fullscreenMobile && this.isMobile;
-    },
+    }
   },
   watch: {
     visible: {
-      handler (isMenuActive) {
+      handler(isMenuActive) {
         this.isMenuActive = isMenuActive;
       },
-      immediate: true,
+      immediate: true
     },
-    isFullScreenMode () {
+    isFullScreenMode() {
       if (!this.isMenuActive) return;
 
       this.hideDatePicker();
       setTimeout(() => {
         this.showDatePicker();
       }, 200);
-    },
+    }
   },
-  created () {
+  created() {
     /* istanbul ignore next */
-    ['no-input'].forEach(prop => {
-      if (this.$attrs.hasOwnProperty(prop)) removed({ original: prop, vm: this });
+    ["no-input"].forEach(prop => {
+      if (this.$attrs.hasOwnProperty(prop))
+        removed({ original: prop, vm: this });
     });
 
     /* istanbul ignore next */
-    if (this.$attrs.hasOwnProperty('fullscreen-breakpoint')) {
-      deprecate({ original: 'fullscreen-mobile', replacement: 'mobile-breakpoint', vm: this });
+    if (this.$attrs.hasOwnProperty("fullscreen-breakpoint")) {
+      deprecate({
+        original: "fullscreen-mobile",
+        replacement: "mobile-breakpoint",
+        vm: this
+      });
     }
   },
-  mounted () {
+  mounted() {
     this.activator = this.$refs.activator;
   },
-  beforeDestroy () {
+  beforeDestroy() {
     this.hideDatePicker();
-    this.$emit('onDestroy');
+    this.$emit("onDestroy");
   },
   methods: {
     // ------------------------------
     // Events
     // ------------------------------
-    showDatePicker () {
+    showDatePicker() {
       if (this.disabled) return;
 
       this.isMenuActive = true;
-      this.$emit('onOpen');
+      this.$emit("onOpen");
     },
-    hideDatePicker () {
+    hideDatePicker() {
       if (!this.isMenuActive) return;
 
       this.isMenuActive = false;
       this.isBooted = false;
 
       clearAllBodyScrollLocks();
-      this.$emit('onClose');
+      this.$emit("onClose");
     },
-    changeDate (date) {
+    changeMonthTrigger(params) {
+      this.$emit("onChangeMonth", params);
+    },
+    changeDate(date) {
       this.internalDate = date;
       if (this.validate) return;
       this.validateDate();
     },
-    validateDate () {
+    validateDate() {
       // if there is no date selected, return;
       if (!this.date) {
         this.hideDatePicker();
         return;
       }
 
-      this.$emit('input', transformDateForModel(this.date, this.outputFormat, this.range));
-      this.$emit('onChange');
+      this.$emit(
+        "input",
+        transformDateForModel(this.date, this.outputFormat, this.range)
+      );
+      this.$emit("onChange");
       this.hideDatePicker();
     },
-    onKeyDown (event) {
+    onKeyDown(event) {
       const keyCode = event.keyCode;
       const menu = this.$refs.menu;
       if (!menu) return;
 
       // close menu on esc|tab
-      if ([
-        KEYCODES.esc,
-        KEYCODES.tab,
-      ].includes(keyCode)) return this.hideDatePicker(event);
+      if ([KEYCODES.esc, KEYCODES.tab].includes(keyCode))
+        return this.hideDatePicker(event);
     },
-    onClearDate () {
-      this.$emit('input', undefined);
-      this.$emit('onChange');
+    onClearDate() {
+      this.$emit("input", undefined);
+      this.$emit("onChange");
     },
     // ------------------------------
     // Generate Template
     // ------------------------------
-    genContent () {
+    genContent() {
       if (this.inline) return [this.genAgenda()];
 
       return [
-        this.$scopedSlots.activator ? this.genActivator() : this.genCustomInput(),
-        this.genMenuWithContent(),
+        this.$scopedSlots.activator
+          ? this.genActivator()
+          : this.genCustomInput(),
+        this.genMenuWithContent()
       ];
     },
-    genActivator () {
-      return this.$createElement('div', {
-        staticClass: 'vd-activator',
-        directives: [{
-          name: 'click-outside',
-          value: {
-            isActive: this.isMenuActive && !this.isFullScreenMode,
-            handler: this.hideDatePicker,
+    genActivator() {
+      return this.$createElement(
+        "div",
+        {
+          staticClass: "vd-activator",
+          directives: [
+            {
+              name: "click-outside",
+              value: {
+                isActive: this.isMenuActive && !this.isFullScreenMode,
+                handler: this.hideDatePicker
+              }
+            }
+          ],
+          on: {
+            click: this.showDatePicker,
+            keydown: this.onKeyDown
           },
-        }],
-        on: {
-          click: this.showDatePicker,
-          keydown: this.onKeyDown,
+          ref: "activator"
         },
-        ref: 'activator',
-      }, [
-        this.$scopedSlots.activator({
-          date: this.formattedInputDate,
-        }),
-      ]);
+        [
+          this.$scopedSlots.activator({
+            date: this.formattedInputDate
+          })
+        ]
+      );
     },
-    genCustomInput () {
+    genCustomInput() {
       return this.$createElement(VDPickerCustomInput, {
         props: {
           clearable: this.clearable,
@@ -312,26 +333,28 @@ export default baseMixins.extend({
           name: this.name,
           noCalendarIcon: this.noCalendarIcon,
           placeholder: this.placeholder,
-          tabindex: this.tabindex,
+          tabindex: this.tabindex
         },
-        directives: [{
-          name: 'click-outside',
-          value: {
-            isActive: this.isMenuActive && !this.isFullScreenMode,
-            handler: this.hideDatePicker,
-          },
-        }],
+        directives: [
+          {
+            name: "click-outside",
+            value: {
+              isActive: this.isMenuActive && !this.isFullScreenMode,
+              handler: this.hideDatePicker
+            }
+          }
+        ],
         nativeOn: {
-          click: this.showDatePicker,
+          click: this.showDatePicker
         },
         on: {
           keydown: this.onKeyDown,
-          clearDate: this.onClearDate,
+          clearDate: this.onClearDate
         },
-        ref: 'activator',
+        ref: "activator"
       });
     },
-    genMenuWithContent () {
+    genMenuWithContent() {
       const shouldShowBottomSheet = this.isFullScreenMode;
 
       const menuProps = {
@@ -340,28 +363,34 @@ export default baseMixins.extend({
         origin: this.origin,
         allowOverflow: this.allowOverflow,
         attach: !shouldShowBottomSheet ? this.attach : false,
-        transition: shouldShowBottomSheet ? 'slide-in-out-transition' : 'scale-transition',
+        transition: shouldShowBottomSheet
+          ? "slide-in-out-transition"
+          : "scale-transition",
         // Allow GMenu to act like a bottomSheet
         // TODO create a GBottomSheet component
-        bottomSheet: shouldShowBottomSheet,
+        bottomSheet: shouldShowBottomSheet
       };
       const activator = this.activator;
 
-      return this.$createElement(VDMenu, {
-        attrs: { role: 'menu' },
-        props: {
-          ...menuProps,
-          activator,
-        },
-        on: {
-          transitionEnd: () => {
-            this.isBooted = true;
+      return this.$createElement(
+        VDMenu,
+        {
+          attrs: { role: "menu" },
+          props: {
+            ...menuProps,
+            activator
           },
+          on: {
+            transitionEnd: () => {
+              this.isBooted = true;
+            }
+          },
+          ref: "menu"
         },
-        ref: 'menu',
-      }, [this.genAgenda()]);
+        [this.genAgenda()]
+      );
     },
-    genAgenda () {
+    genAgenda() {
       return this.$createElement(VDPickerAgenda, {
         props: {
           allowedDates: this.allowedDates,
@@ -369,7 +398,8 @@ export default baseMixins.extend({
           buttonValidate: this.textsFormat.buttonValidate,
           color: this.color,
           date: this.internalDate,
-          fullscreen: this.isBooted && this.isMenuActive && this.isFullScreenMode,
+          fullscreen:
+            this.isBooted && this.isMenuActive && this.isFullScreenMode,
           headerFormat: this.headerFormat,
           locale: this.currentLocale,
           maxDate: this.maxDate,
@@ -383,28 +413,35 @@ export default baseMixins.extend({
           type: this.type,
           validate: this.validate,
           value: this.isMenuActive,
-          visibleYearsNumber: this.visibleYearsNumber,
+          visibleYearsNumber: this.visibleYearsNumber
         },
         on: {
           selectDate: this.changeDate,
           validateDate: this.validateDate,
           close: this.hideDatePicker,
+          selectMonth: this.changeMonthTrigger
         },
-        directives: [{
-          name: 'click-outside',
-          value: {
-            isActive: this.isBooted && this.isMenuActive,
-            handler: this.hideDatePicker,
-          },
-        }],
-        ref: 'agenda',
+        directives: [
+          {
+            name: "click-outside",
+            value: {
+              isActive: this.isBooted && this.isMenuActive,
+              handler: this.hideDatePicker
+            }
+          }
+        ],
+        ref: "agenda"
       });
-    },
+    }
   },
-  render (h) {
-    return h('div', {
-      staticClass: 'vd-wrapper',
-      class: this.classes,
-    }, this.genContent());
-  },
+  render(h) {
+    return h(
+      "div",
+      {
+        staticClass: "vd-wrapper",
+        class: this.classes
+      },
+      this.genContent()
+    );
+  }
 });
